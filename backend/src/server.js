@@ -25,6 +25,7 @@ const db = new Pool({
     app.use('/api/auth', require('./routes/auth'));
     app.use('/api/subscriptions', require('./routes/subscriptions'));
     app.use('/api/alerts', require('./routes/alerts'));
+app.use('/api/watchlist', require('./routes/watchlist'));
 
     app.get('/health', async (req, res) => {
       try { await db.query('SELECT 1'); res.json({ status: 'ok', ts: new Date() }); }
