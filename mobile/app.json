@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "ReAmped",
+    "slug": "reamped",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f0f0f"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true, 
+      "bundleIdentifier": "app.reamped.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f0f0f"
+      },
+      "package": "app.reamped.mobile"
+    },
+    "web": { "favicon": "./assets/favicon.png" },
+    "extra": {
+      "apiUrl": "https://reamped.app",
+      "eas": { "projectId": "replace-with-eas-project-id" }
+    }
+  }
+}
