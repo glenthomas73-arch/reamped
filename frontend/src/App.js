@@ -9,31 +9,35 @@ import PricingPage from './pages/PricingPage';
 import WatchlistPage from './pages/WatchlistPage';
 import AlertsPage from './pages/AlertsPage';
 import AccountPage from './pages/AccountPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 
 const queryClient = new QueryClient({
-      defaultOptions: { queries: { staleTime: 2 * 60 * 1000, retry: 1 } },
+  defaultOptions: { queries: { staleTime: 2 * 60 * 1000, retry: 1 } },
 });
 
 export default function App() {
-      return (
-              <AuthProvider>
-                <QueryClientProvider client={queryClient}>
-                  <Router>
-                    <div className="app">
-                      <Header />
-                      <main className="main-content">
-                        <Routes>
-                          <Route path="/" element={<SearchPage />} />
+  return (
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <div className="app">
+            <Header />
+            <main className="main-content">
+              <Routes>
+                <Route path="/" element={<SearchPage />} />
                 <Route path="/listing/:platform/:id" element={<ListingPage />} />
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/watchlist" element={<WatchlistPage />} />
                 <Route path="/alerts" element={<AlertsPage />} />
                 <Route path="/account" element={<AccountPage />} />
-    </Routes>
-    </main>
-    </div>
-    </Router>
-    </QueryClientProvider>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+              </Routes>
+            </main>
+          </div>
+        </Router>
+      </QueryClientProvider>
     </AuthProvider>
   );
 }
