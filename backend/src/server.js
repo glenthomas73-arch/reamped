@@ -11,38 +11,68 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 const db = new Pool({
-  connectionString: process.env.DATABASE_URL,
+    connectionString: process.env.DATABASE_URL,
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    });
-    app.locals.db = db;
+});
+app.locals.db = db;
 
-    app.use(helmet());
-    app.use(cors({ origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'], credentials: true }));
-    app.use(express.json({ limit: '10mb' }));
-    app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+// ─── Middleware ───────────────────────────────────────────────────────────────
+app.use(helmet());
+app.use(cors({ origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'], credentials: true }));
 
-    app.use('/api/search', require('./routes/search'));
-    app.use('/api/auth', require('./routes/auth'));
-    app.use('/api/subscriptions', require('./routes/subscriptions'));
-    app.use('/api/alerts', require('./routes/alerts'));
-app.use('/api/watchlist', require('./routes/watchlist'));
+// Stripe webhook needs raw body — mount BEFORE express.json()
+app.use('/api/subscriptions/webhook', express.raw({ type: 'application/json' }));
 
-    app.get('/health', async (req, res) => {
-      try { await db.query('SELECT 1'); res.json({ status: 'ok', ts: new Date() }); }
-        catch { res.status(503).json({ status: 'error' }); }
-        });
+app.use(express.json({ limit: '10mb' }));
+app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 
-        app.use((req, res) => res.status(404).json({ error: 'Not found' }));
-        app.use((err, req, res, next) => { console.error(err); res.status(500).json({ error: 'Server error' }); });
+// ─── Routes ───────────────────────────────────────────────────────────────────
+app.use('/api/search',        require('./routes/search'));
+app.use('/api/auth',          require('./routes/auth'));
+app.use('/api/subscriptions', require('./routes/subscriptions'));
+app.use('/api/alerts',        require('./routes/alerts'));
+app.use('/api/watchlist',     require('./routes/watchlist'));
 
-        app.listen(PORT, () => console.log(`ReAmped API running on port ${PORT}`));
+// ─── Health check ─────────────────────────────────────────────────────────────
+app.get('/health', async (req, res) => {
+    try { await db.query('SELECT 1'); res.json({ status: 'ok', ts: new Date() }); }
+    catch { res.status(503).json({ status: 'error' }); }
+});
 
-        // Aggregation workers (scheduled)
-        cron.schedule('*/20 * * * *', async () => {
-          try { await require('./workers/reverbFetcher').runReverbFetcher(); } catch(e) { console.error('Reverb worker error:', e); }
-          });
-          cron.schedule('*/25 * * * *', async () => {
-            try { await require('./workers/ebayFetcher').runEbayFetcher(); } catch(e) { console.error('eBay worker error:', e); }
-            });
+app.use((req, res) => res.status(404).json({ error: 'Not found' }));
+app.use((err, req, res, next) => { console.error(err); res.status(500).json({ error: 'Server error' }); });
 
-            module.exports = app;
+app.listen(PORT, () => console.log(`ReAmped API running on port ${PORT}`));
+
+// ─── Aggregation workers ──────────────────────────────────────────────────────
+// Reverb: every 20 min
+cron.schedule('*/20 * * * *', async () => {
+    try { await require('./workers/reverbFetcher').runReverbFetcher(); }
+    catch (e) { console.error('Reverb worker error:', e.message); }
+});
+
+// eBay: every 25 min (offset from Reverb)
+cron.schedule('5,30,55 * * * *', async () => {
+    try { await require('./workers/ebayFetcher').runEbayFetcher(); }
+    catch (e) { console.error('eBay worker error:', e.message); }
+});
+
+// Guitar Center Used: every 60 min (lower cadence — GC rate-limits aggressively)
+cron.schedule('10 * * * *', async () => {
+    try { await require('./workers/gcUsedFetcher').runGcUsedFetcher(); }
+    catch (e) { console.error('GC Used worker error:', e.message); }
+});
+
+// Sweetwater Used: every 60 min (offset from GC)
+cron.schedule('35 * * * *', async () => {
+    try { await require('./workers/sweetwaterFetcher').runSweetwaterFetcher(); }
+    catch (e) { console.error('Sweetwater worker error:', e.message); }
+});
+
+// Price alerts: every 30 min
+cron.schedule('*/30 * * * *', async () => {
+    try { await require('./workers/alertsWorker').runAlertsWorker(); }
+    catch (e) { console.error('Alerts worker error:', e.message); }
+});
+
+module.exports = app;
