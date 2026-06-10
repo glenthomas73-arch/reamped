@@ -44,6 +44,10 @@ CREATE TABLE IF NOT EXISTS listings (
       price_score NUMERIC(5,2),
       condition_score NUMERIC(5,2),
       trust_score NUMERIC(5,2),
+      -- Scorer enrichment columns
+      avg_price NUMERIC(10,2),
+      price_delta_pct NUMERIC(5,2),
+      value_grade TEXT CHECK (value_grade IN ('A','B','C','D','F')),
       is_active BOOLEAN DEFAULT TRUE,
       listed_at TIMESTAMPTZ,
       fetched_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -57,10 +61,20 @@ CREATE INDEX IF NOT EXISTS idx_listings_brand_model ON listings(brand, model);
 CREATE INDEX IF NOT EXISTS idx_listings_price ON listings(price);
 CREATE INDEX IF NOT EXISTS idx_listings_currency ON listings(currency);
 CREATE INDEX IF NOT EXISTS idx_listings_value_score ON listings(value_score DESC NULLS LAST);
-CREATE INDEX IF NOT EXISTS idx_listings_active ON listings(is_active) WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_listings_value_grade ON listings(value_grade);
 CREATE INDEX IF NOT EXISTS idx_listings_country ON listings(location_country);
-CREATE INDEX IF NOT EXISTS idx_listings_search ON listings USING GIN(
-      to_tsvector('english', title || ' ' || COALESCE(brand,'') || ' ' || COALESCE(model,''))
+CREATE INDEX IF NOT EXISTS idx_listings_search USING GIN(
+      to_tsvector('english', coalesce(title,'') || ' ' || coalesce(brand,'') || ' ' || coalesce(model,''))
+    );
+
+CREATE TABLE IF NOT EXISTS searches (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+      session_id TEXT,
+      query TEXT NOT NULL,
+      filters JSONB DEFAULT '{}',
+      result_count INTEGER DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
 CREATE TABLE IF NOT EXISTS price_alerts (
@@ -95,3 +109,8 @@ CREATE TABLE IF NOT EXISTS watchlist (
       added_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       UNIQUE(user_id, listing_id)
     );
+
+-- Migration helpers: add new scorer columns to existing deployments
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS avg_price NUMERIC(10,2);
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS price_delta_pct NUMERIC(5,2);
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS value_grade TEXT CHECK (value_grade IN ('A','B','C','D','F'));
