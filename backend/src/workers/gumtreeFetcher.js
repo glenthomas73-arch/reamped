@@ -27,7 +27,7 @@ const CATEGORIES = [
 ];
 
 async function fetchPage(locationId, slug, page = 1) {
-  const { data } = await axios.get(`${GT_BASE}/for-sale/${slug}/${locationId}/page${page}`, {
+        const { data } = await axios.get(`${GT_BASE}/search?search_category=${slug}&search_location=${locationId}&page=${page}&is_for_sale=true`, {
     headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ReAmped/1.0)', Accept: 'text/html', 'Accept-Language': 'en-GB' },
     timeout: 20000,
   });
