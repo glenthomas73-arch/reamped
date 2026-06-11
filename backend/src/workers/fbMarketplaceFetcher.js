@@ -1,4 +1,4 @@
-// ReAmped Facebook Marketplace Fetcher
+// Node 18 polyfill: if (!global.File) global.File = class File {};// ReAmped Facebook Marketplace Fetcher
 //
 // Facebook Marketplace exposes a public GraphQL search endpoint that does NOT
 // require authentication for location-based browsing.  We query it for used
