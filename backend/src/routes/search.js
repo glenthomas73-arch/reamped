@@ -264,23 +264,10 @@ router.get('/', optionalAuth, async (req, res) => {
             if (platforms) {
                 // Pro platforms (facebook, gumtree) require auth
                 const validPlatforms = ['reverb', 'ebay', 'guitarcenter', 'sweetwater', 'facebook', 'gumtree'];
-                const proPlatforms = ['facebook', 'gumtree'];
-                let platList = platforms.split(',').filter(p => validPlatforms.includes(p));
-
-                // Gate pro platforms behind Pro subscription
-                if (!req.user?.isPro) {
-                    platList = platList.filter(p => !proPlatforms.includes(p));
-                }
-
-                if (platList.length) {
-                    conditions.push(`platform = ANY($${paramIdx}::text[])`);
-                    params.push(platList);
-                    paramIdx++;
-                }
-            } else if (!req.user?.isPro) {
-                // Default: exclude pro platforms for non-pro users
-                conditions.push(`platform NOT IN ('facebook', 'gumtree')`);
-            }
+                        if (platList.length) {
+            conditions.push(`platform = ANY($${paramIdx++}::text[])`);
+            params.push(platList);
+        }
 
             // Sort order
             const sortMap = {
