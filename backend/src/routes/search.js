@@ -124,9 +124,21 @@ router.get('/', optionalAuth, async (req, res) => {
                             max_price,
                             platforms,
                             sort = 'value_score',
-                            page = 1,
-                            limit = 24,
-                    } = req.query;
+                            page,
+                            limit,
+                            // ── new search-filter params ──
+                            min_year,
+                            max_year,
+                            finish,
+                            country_of_manufacture,
+                            location_country,
+                            handedness,
+                            num_strings,
+                            shipping_only,
+                            value_grade: grade_filter,
+                            min_seller_rating,
+                            currency: currency_filter,
+                        } = req.query;
 
                     const pageNum = Math.max(1, parseInt(page, 10) || 1);
                     const limitNum = Math.min(48, Math.max(1, parseInt(limit, 10) || 24));
@@ -179,6 +191,74 @@ router.get('/', optionalAuth, async (req, res) => {
                     conditions.push(`price <= $${paramIdx}`);
                     params.push(parseFloat(max_price));
                     paramIdx++;
+
+        // Year range
+        if (min_year) {
+            conditions.push(`(year_min IS NULL OR year_min >= $${paramIdx++})`);
+            params.push(parseInt(min_year));
+        }
+        if (max_year) {
+            conditions.push(`(year_max IS NULL OR year_max <= $${paramIdx++})`);
+            params.push(parseInt(max_year));
+        }
+
+        // Finish / colour
+        if (finish) {
+            conditions.push(`finish ILIKE $${paramIdx++}`);
+            params.push(`%${finish}%`);
+        }
+
+        // Country of manufacture
+        if (country_of_manufacture) {
+            conditions.push(`country_of_manufacture ILIKE $${paramIdx++}`);
+            params.push(`%${country_of_manufacture}%`);
+        }
+
+        // Seller location country
+        if (location_country) {
+            conditions.push(`location_country ILIKE $${paramIdx++}`);
+            params.push(`%${location_country}%`);
+        }
+
+        // Handedness
+        if (handedness && ['right','left','ambidextrous'].includes(handedness)) {
+            conditions.push(`(handedness = $${paramIdx++} OR handedness IS NULL)`);
+            params.push(handedness);
+        }
+
+        // Number of strings
+        if (num_strings) {
+            conditions.push(`num_strings = $${paramIdx++}`);
+            params.push(parseInt(num_strings));
+        }
+
+        // Shipping only
+        if (shipping_only === 'true') {
+            conditions.push('shipping_available = TRUE');
+        }
+
+        // Value grade filter
+        if (grade_filter) {
+            const validGrades = ['A','B','C','D','F'];
+            const gradeList = grade_filter.split(',').filter(g => validGrades.includes(g));
+            if (gradeList.length) {
+                conditions.push(`value_grade = ANY($${paramIdx++}::text[])`);
+                params.push(gradeList);
+            }
+        }
+
+        // Minimum seller rating
+        if (min_seller_rating) {
+            conditions.push(`seller_rating >= $${paramIdx++}`);
+            params.push(parseFloat(min_seller_rating));
+        }
+
+        // Currency filter
+        if (currency_filter) {
+            conditions.push(`currency = $${paramIdx++}`);
+            params.push(currency_filter.toUpperCase());
+        }
+
             }
 
             if (platforms) {
@@ -223,7 +303,9 @@ router.get('/', optionalAuth, async (req, res) => {
                         image_urls, seller_name, seller_rating, seller_reviews,
                         value_score, price_score, condition_score, trust_score,
                         value_grade, price_delta_pct, avg_price,
-                        listed_at, fetched_at
+                        year_min, year_max, finish, country_of_manufacture,
+                    handedness, num_strings, features,
+                    listed_at, fetched_at
                 FROM listings
                 WHERE ${whereClause}
                 ORDER BY ${orderBy}
