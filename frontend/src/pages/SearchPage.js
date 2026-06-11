@@ -5,7 +5,7 @@ import SearchHero from '../components/SearchHero';
 import FilterPanel from '../components/FilterPanel';
 import ListingCard from '../components/ListingCard';
 
-const API = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const API = process.env.REACT_APP_API_URL || 'https://reamped-production.up.railway.app';
 
 async function search(p) {
       const qs = new URLSearchParams(Object.fromEntries(Object.entries(p).filter(([,v])=>v!==''&&v!=null)));
