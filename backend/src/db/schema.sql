@@ -63,7 +63,7 @@ CREATE INDEX IF NOT EXISTS idx_listings_currency ON listings(currency);
 CREATE INDEX IF NOT EXISTS idx_listings_value_score ON listings(value_score DESC NULLS LAST);
 CREATE INDEX IF NOT EXISTS idx_listings_value_grade ON listings(value_grade);
 CREATE INDEX IF NOT EXISTS idx_listings_country ON listings(location_country);
-CREATE INDEX IF NOT EXISTS idx_listings_search USING GIN(
+CREATE INDEX IF NOT EXISTS idx_listings_search ON listings USING GIN(
       to_tsvector('english', coalesce(title,'') || ' ' || coalesce(brand,'') || ' ' || coalesce(model,''))
     );
 
