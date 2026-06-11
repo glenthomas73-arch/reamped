@@ -2,7 +2,7 @@ import React from 'react';
 
 const CONDITIONS = ['mint','excellent','good','fair','poor'];
 const CATEGORIES = ['guitar','bass','amp','pedal','keys','drum','recording'];
-const PLATFORMS  = ['reverb','ebay','guitarcenter','sweetwater'];
+const PLATFORMS  = ['reverb','ebay','guitarcenter','sweetwater','facebook','gumtree'];
 const SORTS      = [
   {value:'value_score', label:'Best Value'},
   {value:'price_asc',   label:'Low to High'},
