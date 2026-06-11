@@ -49,7 +49,7 @@ function normalize(listing, categoryName) {
           shipping_cost: listing.shipping?.rates?.[0]?.rate?.amount ? parseFloat(listing.shipping.rates[0].rate.amount) : null,
           listing_url: listing._links?.web?.href || null,
           affiliate_url: listing._links?.web?.href ? `${listing._links.web.href}?utm_source=reamped` : null,
-          image_urls: listing.photos?.slice(0, 5).map(p => p.full) || [],
+          image_urls: listing.photos?.slice(0, 5).map(p => p.full).filter(Boolean) || [],
           seller_name: listing.seller?.name || null,
           seller_rating: listing.seller?.positive_feedback_percent ? listing.seller.positive_feedback_percent / 100 : null,
           seller_reviews: listing.seller?.feedback_count || 0,
@@ -67,7 +67,7 @@ async function upsert(listings) {
                                ON CONFLICT (platform, external_id) DO UPDATE SET price=$4, updated_at=NOW(), is_active=TRUE
                              `, [l.external_id, l.platform, l.title, l.price, l.currency, l.condition, l.category,
                                          l.brand, l.model, l.location_city, l.location_country, l.shipping_available, l.shipping_cost,
-                                         l.listing_url, l.affiliate_url, JSON.stringify(l.image_urls), l.seller_name, l.seller_rating,
+                                         l.listing_url, l.affiliate_url, l.image_urls, l.seller_name, l.seller_rating,
                                          l.seller_reviews, l.listed_at]);
         }
   }
