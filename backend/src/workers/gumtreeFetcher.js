@@ -1,4 +1,4 @@
-// Node 18 polyfill for undici/cheerio compatibilityif (!global.File) global.File = class File {};
+if (!global.File) global.File = class File {}; // Node 18 polyfill for undici/cheerio
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { Pool } = require('pg');
