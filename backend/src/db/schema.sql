@@ -114,3 +114,18 @@ CREATE TABLE IF NOT EXISTS watchlist (
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS avg_price NUMERIC(10,2);
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS price_delta_pct NUMERIC(5,2);
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS value_grade TEXT CHECK (value_grade IN ('A','B','C','D','F'));
+
+-- ── Search-filter columns (idempotent) ────────────────────────────────────────
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS year_min        SMALLINT;
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS year_max        SMALLINT;
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS finish          TEXT;
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS country_of_manufacture TEXT;
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS handedness      TEXT CHECK (handedness IN ('right','left','ambidextrous')) DEFAULT 'right';
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS num_strings     SMALLINT;
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS features        TEXT[];
+
+-- Indexes for new filter columns
+CREATE INDEX IF NOT EXISTS idx_listings_year_min  ON listings(year_min);
+CREATE INDEX IF NOT EXISTS idx_listings_finish    ON listings(finish);
+CREATE INDEX IF NOT EXISTS idx_listings_country_mfr ON listings(country_of_manufacture);
+CREATE INDEX IF NOT EXISTS idx_listings_handedness  ON listings(handedness);
