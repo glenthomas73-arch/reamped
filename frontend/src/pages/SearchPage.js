@@ -17,11 +17,22 @@ async function search(p) {
 export default function SearchPage() {
       const [sp, setSP] = useSearchParams();
       const [f, setF] = useState({
-              q: sp.get('q')||'', sort: sp.get('sort')||'value_score',
-              condition: sp.get('condition')||'', category: sp.get('category')||'',
-              platforms: sp.get('platforms')||'', min_price: sp.get('min_price')||'',
-              max_price: sp.get('max_price')||'', page: sp.get('page')||'1',
-      });
+    q: sp.get('q')||'', sort: sp.get('sort')||'value_score',
+    condition: sp.get('condition')||'', category: sp.get('category')||'',
+    platforms: sp.get('platforms')||'', min_price: sp.get('min_price')||'',
+    max_price: sp.get('max_price')||'', page: sp.get('page')||'1',
+    // new filters
+    min_year: sp.get('min_year')||'', max_year: sp.get('max_year')||'',
+    finish: sp.get('finish')||'',
+    country_of_manufacture: sp.get('country_of_manufacture')||'',
+    location_country: sp.get('location_country')||'',
+    handedness: sp.get('handedness')||'',
+    num_strings: sp.get('num_strings')||'',
+    shipping_only: sp.get('shipping_only')||'',
+    value_grade: sp.get('value_grade')||'',
+    min_seller_rating: sp.get('min_seller_rating')||'',
+    currency: sp.get('currency')||'',
+});
 
   const {data,isLoading,isError,error} = useQuery({
           queryKey: ['search',f], queryFn: ()=>search(f), keepPreviousData: true,
