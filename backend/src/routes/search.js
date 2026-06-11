@@ -264,12 +264,14 @@ router.get('/', optionalAuth, async (req, res) => {
             if (platforms) {
                 // Pro platforms (facebook, gumtree) require auth
                 const validPlatforms = ['reverb', 'ebay', 'guitarcenter', 'sweetwater', 'facebook', 'gumtree'];
+                        let platList = platforms
+                            ? platforms.split(',').filter(p => validPlatforms.includes(p))
+                            : [];
                         if (platList.length) {
-            conditions.push(`platform = ANY($${paramIdx++}::text[])`);
-            params.push(platList);
-        }
-
-            // Sort order
+                            conditions.push(`platform = ANY($${paramIdx++}::text[])`);
+                            params.push(platList);
+                        }
+                        // Sort order
             const sortMap = {
                 value_score: 'value_score DESC NULLS LAST',
                 price_asc: 'price ASC',
