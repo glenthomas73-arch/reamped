@@ -1,4 +1,4 @@
-// ReAmped Gumtree UK Fetcher (Phase 3)
+// Node 18 polyfill for undici/cheerio compatibilityif (!global.File) global.File = class File {};
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { Pool } = require('pg');
@@ -37,7 +37,7 @@ async function fetchPage(locationId, slug, page = 1) {
 function parseListings(html, catName, locName) {
   const $ = cheerio.load(html);
   const out = [];
-  $('article.listing-maxi, article[data-q="search-result"]').each((_, el) => {
+  $('article.listing-maxi, article[data-q="search-result"], li[data-q="search-result"]').each((_, el) => {
     try {
       const $e = $(el);
       const href = $e.find('a[href*="/for-sale/"]').first().attr('href') || '';
